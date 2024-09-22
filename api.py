@@ -3,9 +3,9 @@ from flask_cors import CORS
 import base64
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/bfhl": {"origins": "*"}})
 
-app = Flask(__name__)
+
 
 # POST route that accepts the JSON input and processes the data
 @app.route('/bfhl', methods=['POST'])
