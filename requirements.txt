@@ -1,4 +1,0 @@
-Flask-CORS==3.0.10
-Flask==2.3.3
-Werkzeug==2.3.3
-gunicorn

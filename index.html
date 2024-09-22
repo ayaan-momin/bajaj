@@ -41,7 +41,7 @@
         submitBtn.addEventListener('click', async () => {
             try {
                 const inputData = JSON.parse(jsonInput.value);
-                const response = await axios.post('http://localhost:5000/bfhl', inputData);
+                const response = await axios.post('https://bajaj-uzjv.onrender.com/bfhl', inputData);
                 
                 filterContainer.classList.remove('hidden');
                 updateResponse(response.data);
