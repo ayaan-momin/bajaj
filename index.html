@@ -3,77 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Interaction Demo</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        textarea, select, button {
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        pre {
-            background-color: #f0f0f0;
-            padding: 10px;
-            border-radius: 5px;
-        }
-    </style>
+    <title>RA2111026030142</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>API Interaction Demo</h1>
-    <textarea id="apiInput" rows="5" placeholder='{"data":["M","1","334","4","B"]}'></textarea>
-    <button onclick="submitData()">Submit</button>
-    <select id="filterSelect" multiple>
-        <option value="numbers">Numbers</option>
-        <option value="alphabets">Alphabets</option>
-        <option value="highest_lowercase_alphabet">Highest Lowercase Alphabet</option>
-    </select>
-    <pre id="response"></pre>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-4">API Frontend Interface</h1>
+        
+        <div class="mb-4">
+            <label for="jsonInput" class="block mb-2">Enter JSON:</label>
+            <textarea id="jsonInput" rows="4" class="w-full p-2 border rounded" placeholder='{"data": ["A","1","B","2","C","3"]}'></textarea>
+        </div>
+        
+        <button id="submitBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Submit</button>
+        
+        <div id="filterContainer" class="mt-4 hidden">
+            <label for="filterSelect" class="block mb-2">Select filters:</label>
+            <select id="filterSelect" multiple class="w-full p-2 border rounded">
+                <option value="numbers">Numbers</option>
+                <option value="alphabets">Alphabets</option>
+                <option value="highest_lowercase_alphabet">Highest Lowercase Alphabet</option>
+            </select>
+        </div>
+        
+        <div id="responseContainer" class="mt-4"></div>
+    </div>
 
     <script>
-        function submitData() {
-            const input = document.getElementById('apiInput').value;
-            fetch('http://localhost:5000/bfhl', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: input
-            })
-            .then(response => response.json())
-            .then(data => {
-                displayResponse(data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('response').textContent = 'Error: ' + error.message;
-            });
-        }
+        const jsonInput = document.getElementById('jsonInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const filterContainer = document.getElementById('filterContainer');
+        const filterSelect = document.getElementById('filterSelect');
+        const responseContainer = document.getElementById('responseContainer');
 
-        function displayResponse(data) {
-            const filterSelect = document.getElementById('filterSelect');
+        submitBtn.addEventListener('click', async () => {
+            try {
+                const inputData = JSON.parse(jsonInput.value);
+                const response = await axios.post('http://localhost:5000/bfhl', inputData);
+                
+                filterContainer.classList.remove('hidden');
+                updateResponse(response.data);
+            } catch (error) {
+                responseContainer.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`;
+            }
+        });
+
+        filterSelect.addEventListener('change', () => {
             const selectedFilters = Array.from(filterSelect.selectedOptions).map(option => option.value);
-            
-            let filteredResponse = '';
-            for (const filter of selectedFilters) {
-                if (data[filter]) {
-                    filteredResponse += `${filter.charAt(0).toUpperCase() + filter.slice(1)}: ${data[filter].join(', ')}\n`;
-                }
-            }
+            updateResponse(window.lastResponse, selectedFilters);
+        });
 
-            document.getElementById('response').textContent = filteredResponse || JSON.stringify(data, null, 2);
+        function updateResponse(data, filters = []) {
+            window.lastResponse = data;
+            const filteredData = _.pick(data, ['is_success', 'user_id', 'email', 'roll_number', ...filters]);
+            responseContainer.innerHTML = `<pre class="bg-gray-200 p-4 rounded overflow-x-auto">${JSON.stringify(filteredData, null, 2)}</pre>`;
         }
-
-        // Initialize with all filters selected
-        window.onload = function() {
-            const filterSelect = document.getElementById('filterSelect');
-            for (let i = 0; i < filterSelect.options.length; i++) {
-                filterSelect.options[i].selected = true;
-            }
-        };
     </script>
 </body>
 </html>
