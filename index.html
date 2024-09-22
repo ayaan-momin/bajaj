@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Interaction Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        textarea, select, button {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        pre {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>API Interaction Demo</h1>
+    <textarea id="apiInput" rows="5" placeholder='{"data":["M","1","334","4","B"]}'></textarea>
+    <button onclick="submitData()">Submit</button>
+    <select id="filterSelect" multiple>
+        <option value="numbers">Numbers</option>
+        <option value="alphabets">Alphabets</option>
+        <option value="highest_lowercase_alphabet">Highest Lowercase Alphabet</option>
+    </select>
+    <pre id="response"></pre>
+
+    <script>
+        function submitData() {
+            const input = document.getElementById('apiInput').value;
+            fetch('http://localhost:5000/bfhl', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: input
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayResponse(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('response').textContent = 'Error: ' + error.message;
+            });
+        }
+
+        function displayResponse(data) {
+            const filterSelect = document.getElementById('filterSelect');
+            const selectedFilters = Array.from(filterSelect.selectedOptions).map(option => option.value);
+            
+            let filteredResponse = '';
+            for (const filter of selectedFilters) {
+                if (data[filter]) {
+                    filteredResponse += `${filter.charAt(0).toUpperCase() + filter.slice(1)}: ${data[filter].join(', ')}\n`;
+                }
+            }
+
+            document.getElementById('response').textContent = filteredResponse || JSON.stringify(data, null, 2);
+        }
+
+        // Initialize with all filters selected
+        window.onload = function() {
+            const filterSelect = document.getElementById('filterSelect');
+            for (let i = 0; i < filterSelect.options.length; i++) {
+                filterSelect.options[i].selected = true;
+            }
+        };
+    </script>
+</body>
+</html>
